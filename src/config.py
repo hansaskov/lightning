@@ -1,4 +1,5 @@
 # Dataset
+NUM_CLASSES = 2
 DATA_DIR = "kick_detection_case/"
 TRAIN_VAL_TEST_SPLIT = [0.7, 0.2, 0.1]
 RESIZE_FACTOR = 16 # Greates common devisor
@@ -10,7 +11,6 @@ DATA_STD = (0.0535, 0.0518, 0.0589)
 
 # Training hyperparameters
 INPUT_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT * NUM_CHANNELS
-NUM_CLASSES = 2
 LEARNING_RATE = 0.001
 BATCH_SIZE = 4
 NUM_WORKERS = 4
