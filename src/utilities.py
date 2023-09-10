@@ -18,7 +18,7 @@ def plot_losses(csv_file):
   ax1.set_ylabel('Loss', color='b')
   ax2.set_ylabel('Accuracy', color='g')
 
-  ax1.set_ylim(0, df['train_loss'].max())
+  ax1.set_ylim(0, df['train_loss'].max()*1.1)
   ax2.set_ylim(0, 1)
 
   ax1.legend(loc='upper right')
