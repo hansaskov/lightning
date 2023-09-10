@@ -3,4 +3,4 @@
 /test.ipynb
 
 /.vscode
-/src/pycache
+/src/__pycache__
