@@ -25,7 +25,7 @@ class NN(LightningModule):
             {
                 "train_loss": loss,
                 "train_accuracy": self.accuracy(scores.sigmoid(), y),
-                "train_f1_score": self.f1_score(scores.sigmoid() > 0.5, y),
+                "train_f1_score": self.f1_score(scores.sigmoid(), y),
             },
             on_step=False,
             on_epoch=True,
@@ -39,7 +39,7 @@ class NN(LightningModule):
             {
                 "val_loss": loss,
                 "val_accuracy": self.accuracy(scores.sigmoid(), y),
-                "val_f1_score": self.f1_score(scores.sigmoid() > 0.5, y),
+                "val_f1_score": self.f1_score(scores.sigmoid(), y),
             }
         )
         return loss
@@ -50,7 +50,7 @@ class NN(LightningModule):
             {
                 "test_loss": loss,
                 "test_accuracy": self.accuracy(scores.sigmoid(), y),
-                "test_f1_score": self.f1_score(scores.sigmoid() > 0.5, y),
+                "test_f1_score": self.f1_score(scores.sigmoid(), y),
             }
         )
         return loss
