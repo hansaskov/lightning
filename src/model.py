@@ -1,5 +1,7 @@
+import torch
 import torch.nn.functional as F
 import torchmetrics
+from torchvision.models import resnet18
 from torch import argmax, nn, optim, FloatTensor
 from lightning.pytorch import LightningModule
 
@@ -8,15 +10,19 @@ class NN(LightningModule):
     def __init__(self, input_size, num_classes, learning_rate, class_weighting):
         super().__init__()
         self.lr = learning_rate
-        self.fc1 = nn.Linear(input_size, 64)
-        self.fc2 = nn.Linear(64, num_classes)  # Output layer with a single neuron for binary classification
+        backbone = resnet18(weights="DEFAULT")
+        num_filters = backbone.fc.in_features
+        layers = list(backbone.children())[:-1]
+        self.feature_extractor = nn.Sequential(*layers)
+        self.classifier = nn.Linear(num_filters, num_classes)
         self.loss_fn = nn.CrossEntropyLoss(weight=FloatTensor(class_weighting))  # Cross-entropy loss
         self.accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
     def forward(self, x):
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.fc2(x)
+        self.feature_extractor.eval()
+        with torch.no_grad():
+            representations = self.feature_extractor(x).flatten(1)
+        x = self.classifier(representations)
         return x
 
     def training_step(self, batch, batch_idx):
@@ -55,7 +61,6 @@ class NN(LightningModule):
 
     def _common_step(self, batch, batch_idx):
         x, y = batch
-        x = x.reshape(x.size(0), -1)
         scores = self.forward(x)
         loss = self.loss_fn(scores, y)
         return loss, scores, y
@@ -63,7 +68,6 @@ class NN(LightningModule):
 
     def predict_step(self, batch, batch_idx):
         x, y = batch
-        x = x.reshape(x.size(0), -1)
         scores = self.forward(x)
         preds = argmax(scores, dim=1)
         return preds

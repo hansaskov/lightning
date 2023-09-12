@@ -19,7 +19,7 @@ class kickBallDataModule(LightningDataModule):
 
         train_transform = transforms.Compose([
                 transforms.Resize([self.img_height, self.img_width]),
-               # transforms.RandomHorizontalFlip(p=0.5),
+                transforms.RandomHorizontalFlip(p=0.5),
                # transforms.RandomVerticalFlip(p=0.5),
                # transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
                # transforms.RandomRotation(degrees=(30, 70)),

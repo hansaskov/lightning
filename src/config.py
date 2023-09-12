@@ -1,8 +1,8 @@
 DATA_DIR = "ball_detection/"
 NUM_CLASSES = 2
 CLASS_WEIGHTING= [ 0.5, 0.5]
-RESIZE_FACTOR = 16 # Greates common devisor
-NUM_CHANNELS = 3
+RESIZE_FACTOR = 4 # Greates common devisor
+NUM_CHANNELS = 4
 IMAGE_HEIGHT = int(768 / RESIZE_FACTOR)
 IMAGE_WIDTH = int(1360 / RESIZE_FACTOR)
 DATA_MEAN = (0.1075, 0.1197, 0.0787)
