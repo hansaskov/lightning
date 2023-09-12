@@ -4,45 +4,39 @@ from torch.utils.data import random_split
 from lightning.pytorch import LightningDataModule
 
 class kickBallDataModule(LightningDataModule):
-    def __init__(self, data_dir, batch_size, num_workers, train_val_test_split, img_height, img_width, data_mean, data_std):
+    def __init__(self, data_dir, batch_size, num_workers, img_height, img_width, data_mean, data_std):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.train_val_test_split = train_val_test_split
         self.img_height = img_height
         self.img_width = img_width
         self.data_mean = data_mean
-        self.data_std = data_std
+        self.data_std = data_std    
 
 
     def setup(self, stage):
 
         train_transform = transforms.Compose([
-                transforms.Normalize(self.data_mean, self.data_std),
                 transforms.Resize([self.img_height, self.img_width]),
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomVerticalFlip(),
+               # transforms.RandomHorizontalFlip(p=0.5),
+               # transforms.RandomVerticalFlip(p=0.5),
+               # transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
+               # transforms.RandomRotation(degrees=(30, 70)),
                 transforms.ToTensor(),
+                transforms.Normalize(self.data_mean, self.data_std),
         ])
 
         val_transform = transforms.Compose([
                 transforms.Resize([self.img_height, self.img_width]),
-                transforms.ToTensor()
+                transforms.ToTensor(),
+                transforms.Normalize(self.data_mean, self.data_std),
         ])
 
-        # Load dataset
-        dataset = datasets.ImageFolder(self.data_dir)
 
-        # Split dataset into training, validation and test
-        self.train_ds, self.val_ds, self.test_ds = random_split(dataset, self.train_val_test_split)
-
-        # Apply train transform with data augmentation.
-        self.train_ds.dataset.transform = train_transform
-
-        # Apply val and test transform with no data augmentation. 
-        self.val_ds.dataset.transform = val_transform
-        self.test_ds.dataset.transform = val_transform
+        self.train_ds = datasets.ImageFolder(self.data_dir + 'train', transform=train_transform)
+        self.val_ds = datasets.ImageFolder(self.data_dir + 'val', transform=val_transform)
+        self.test_ds = datasets.ImageFolder(self.data_dir + 'test', transform=val_transform)
 
 
     def train_dataloader(self):

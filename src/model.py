@@ -1,17 +1,17 @@
 import torch.nn.functional as F
 import torchmetrics
-from torch import nn, optim, argmax
+from torch import argmax, nn, optim, FloatTensor
 from lightning.pytorch import LightningModule
 
+
 class NN(LightningModule):
-    def __init__(self, input_size, num_classes, learning_rate):
+    def __init__(self, input_size, num_classes, learning_rate, class_weighting):
         super().__init__()
         self.lr = learning_rate
         self.fc1 = nn.Linear(input_size, 64)
-        self.fc2 = nn.Linear(64, 1)  # Output layer with a single neuron for binary classification
-        self.loss_fn = nn.BCEWithLogitsLoss()  # Binary cross-entropy loss
-        self.accuracy = torchmetrics.Accuracy(task="binary")
-        self.f1_score = torchmetrics.F1Score(task="binary")
+        self.fc2 = nn.Linear(64, num_classes)  # Output layer with a single neuron for binary classification
+        self.loss_fn = nn.CrossEntropyLoss(weight=FloatTensor(class_weighting))  # Cross-entropy loss
+        self.accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
     def forward(self, x):
         x = self.fc1(x)
@@ -24,8 +24,7 @@ class NN(LightningModule):
         self.log_dict(
             {
                 "train_loss": loss,
-                "train_accuracy": self.accuracy(scores.sigmoid(), y),
-                "train_f1_score": self.f1_score(scores.sigmoid(), y),
+                "train_accuracy": self.accuracy(scores, y),
             },
             on_step=False,
             on_epoch=True,
@@ -38,8 +37,7 @@ class NN(LightningModule):
         self.log_dict(
             {
                 "val_loss": loss,
-                "val_accuracy": self.accuracy(scores.sigmoid(), y),
-                "val_f1_score": self.f1_score(scores.sigmoid(), y),
+                "val_accuracy": self.accuracy(scores, y),
             }
         )
         return loss
@@ -50,7 +48,6 @@ class NN(LightningModule):
             {
                 "test_loss": loss,
                 "test_accuracy": self.accuracy(scores.sigmoid(), y),
-                "test_f1_score": self.f1_score(scores.sigmoid(), y),
             }
         )
         return loss
@@ -58,19 +55,20 @@ class NN(LightningModule):
 
     def _common_step(self, batch, batch_idx):
         x, y = batch
-        x = x.view(x.size(0), -1)
+        x = x.reshape(x.size(0), -1)
         scores = self.forward(x)
-        y = y.view(-1, 1)  # Ensure that y has the shape [batch_size, 1]
-        loss = self.loss_fn(scores, y.float())
+        loss = self.loss_fn(scores, y)
         return loss, scores, y
 
 
     def predict_step(self, batch, batch_idx):
-        x, _ = batch
-        x = x.view(x.size(0), -1)
+        x, y = batch
+        x = x.reshape(x.size(0), -1)
         scores = self.forward(x)
-        preds = (scores.sigmoid() > 0.5).int()  # Threshold predictions with sigmoid
+        preds = argmax(scores, dim=1)
         return preds
 
     def configure_optimizers(self):
         return optim.Adam(self.parameters(), lr=self.lr)
+
+    

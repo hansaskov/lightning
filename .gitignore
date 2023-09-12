@@ -1,6 +1,9 @@
 /kick_detection_case
 /logs
 /test.ipynb
-
+/kick_detection
+/ball_detection
+ball_detection.zip
+kick_detection.zip 
 /.vscode
 /src/__pycache__
